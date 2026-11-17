@@ -2,7 +2,7 @@
 
 import { useEffect, useId, useRef, type ReactNode } from "react";
 import { motion } from "framer-motion";
-import { X } from "lucide-react";
+import { X } from "@/lib/imports";
 
 export function Modal({
   title,

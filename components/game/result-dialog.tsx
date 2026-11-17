@@ -1,11 +1,8 @@
 "use client";
 
-import { ArrowRight, Equal } from "lucide-react";
+import { ArrowRight, Equal, Modal, PlayerMark, Celebration } from "@/lib/imports";
 import type { Player } from "@/lib/game";
 import { PLAYERS } from "@/lib/players";
-import { Modal } from "@/components/ui/modal";
-import { PlayerMark } from "@/components/game/player-mark";
-import { Celebration } from "@/components/game/celebration";
 
 export function ResultDialog({
   winner,

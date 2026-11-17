@@ -1,6 +1,6 @@
 "use client";
 
-import { Modal } from "@/components/ui/modal";
+import { Modal } from "@/lib/imports";
 
 export function ConfirmDialog({
   title,
