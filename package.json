@@ -7,9 +7,13 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "node --test tests/*.test.mjs"
+    "test": "node --test tests/*.test.mjs",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "dependencies": {
+    "canvas-confetti": "^1.9.4",
+    "framer-motion": "^14.14.0",
     "lucide-react": "^1.74.0",
     "next": "16.4.6",
     "react": "19.3.0",
@@ -17,11 +21,13 @@
   },
   "devDependencies": {
     "@tailwindcss/turbopack": "4.3.3",
+    "@types/canvas-confetti": "^1.9.0",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.4.6",
+    "prettier": "^3.10.1",
     "tailwindcss": "4.3.3",
     "typescript": "^5"
   }

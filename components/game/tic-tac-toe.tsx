@@ -1,64 +1,231 @@
 "use client";
 
-import { useEffect, useReducer, useState } from "react";
-import { ArrowUpRight, Check, Equal, Gamepad2, Grid2X2, Keyboard, RotateCcw, Sparkles, Trophy, Users } from "lucide-react";
-import { gameReducer, getResult, initialState, parseScores } from "@/lib/game";
+import { useState } from "react";
+import { AnimatePresence, MotionConfig, motion } from "framer-motion";
+import {
+  ArrowRight,
+  Check,
+  CircleHelp,
+  RotateCcw,
+  ShieldCheck,
+  Users,
+  AlertCircle,
+} from "lucide-react";
+import { useGame } from "@/hooks/use-game";
+import { PLAYERS } from "@/lib/players";
+import { getResult } from "@/lib/game";
 import { GlassPanel } from "@/components/ui/glass-panel";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { Board } from "./board";
-import { PlayerMark } from "./player-mark";
-import { Scoreboard } from "./scoreboard";
+import { Board } from "@/components/game/board";
+import { PlayerMark } from "@/components/game/player-mark";
+import { PlayerCard } from "@/components/game/player-card";
+import { Scoreboard } from "@/components/game/scoreboard";
+import { ResultDialog } from "@/components/game/result-dialog";
+import { HelpDialog } from "@/components/game/help-dialog";
 import "@/styles/game.css";
 
-const STORAGE_KEY = "johnrey-tic-tac-toe:scores:v1";
-
 export function TicTacToe() {
-  const [state, dispatch] = useReducer(gameReducer, initialState);
-  const [confirmation, setConfirmation] = useState<"round" | "scores" | null>(null);
-  useEffect(() => {
-    let saved = null;
-    try { saved = localStorage.getItem(STORAGE_KEY); } catch { /* Play still works without storage. */ }
-    dispatch({ type: "hydrate", scores: parseScores(saved) });
-  }, []);
-  useEffect(() => {
-    if (!state.ready) return;
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state.scores)); }
-    catch { /* Storage can be blocked; the in-memory scoreboard still works. */ }
-  }, [state.ready, state.scores]);
-  const result = getResult(state.board);
+  const { state, send, storageAvailable, result } = useGame();
+  const [popup, setPopup] = useState<"round" | "scores" | "help" | null>(null);
+  const [resultDismissed, setResultDismissed] = useState(false);
+  const [celebrate, setCelebrate] = useState(false);
   const finished = Boolean(result.winner || result.draw);
-  const moves = state.board.filter(Boolean).length;
-  const status = result.winner ? `Player ${result.winner} wins!` : result.draw ? "A perfect standoff." : `Player ${state.turn}, your move.`;
-  function newRound() {
-    if (moves && !finished) setConfirmation("round");
-    else dispatch({ type: "new-round" });
+  const nextStarter = state.starter === "X" ? "O" : "X";
+  const moves = state.history.length;
+  const status = !state.ready
+    ? "Setting the table..."
+    : result.winner
+      ? `${PLAYERS[result.winner].name} wins this round`
+      : result.draw
+        ? "A draw. Well played, both."
+        : `${PLAYERS[state.turn].name}'s move`;
+
+  function startRound() {
+    send({ type: "new-round" });
+    setResultDismissed(false);
+    setCelebrate(false);
+    setPopup(null);
   }
+
+  function play(index: number) {
+    const next = send({ type: "play", index });
+    if (!next) return;
+    const outcome = getResult(next.board);
+    if (outcome.winner || outcome.draw) {
+      setResultDismissed(false);
+      setCelebrate(true);
+    }
+  }
+
   return (
-    <div className="game-shell page-container">
-      <header className="site-header"><a href="#main-content" className="brand"><span className="brand-icon"><Grid2X2 size={20} aria-hidden="true" /></span>the little game<span className="brand-dot">.</span></a><span className="header-credit">A little friendly competition <ArrowUpRight size={14} aria-hidden="true" /></span></header>
-      <main id="main-content">
-        <div className="intro"><span className="intro-tag"><Sparkles size={13} aria-hidden="true" /> CLASSIC GAME. FRESH PERSPECTIVE.</span><h1>Three in a row.<br /><span>One more round.</span></h1><p>Grab a friend. Pick a square. Make your move.<br className="desktop-break" /> The classics never get old.</p></div>
-        <div className="game-layout">
-          <GlassPanel className="play-panel" aria-label="Game">
-            <div className="board-heading"><span><Gamepad2 size={17} aria-hidden="true" /> TIC-TAC-TOE</span><span className="mode-badge"><span /> LOCAL 2-PLAYER</span></div>
-            <div className={`turn-status ${finished ? "finished-status" : ""}`} role="status" aria-live="polite" aria-atomic="true">
-              <span className="status-symbol">{result.winner ? <Trophy aria-hidden="true" /> : result.draw ? <Equal aria-hidden="true" /> : <PlayerMark player={state.turn} />}</span>
-              <div><h2>{status}</h2><p>{result.winner ? "Three in a row. Nicely played." : result.draw ? "It's a draw. Great minds think alike." : "Choose an empty square to claim it."}</p></div>
-            </div>
-            <Board board={state.board} turn={state.turn} line={result.line} locked={!state.ready || finished} onPlay={(index) => dispatch({ type: "play", index })} />
-            <div className="board-meta"><span>{finished ? <Check size={13} aria-hidden="true" /> : <span className="live-dot" />}{finished ? "Round complete" : "Game in progress"}</span><span>{moves} / 9 moves</span></div>
-            <button className="primary-button new-game" disabled={!state.ready} onClick={newRound}><RotateCcw size={17} aria-hidden="true" /> New Game <span>↗</span></button>
-            <p className="next-starter">{state.starter === "X" ? "O" : "X"} starts the next round. Keep it fair.</p>
-          </GlassPanel>
-          <aside className="side-panels" aria-label="Scores and game instructions">
-            <Scoreboard scores={state.scores} ready={state.ready} onReset={() => setConfirmation("scores")} />
-            <GlassPanel className="rules-panel" aria-labelledby="rules-heading"><div className="panel-heading"><h2 id="rules-heading"><Users size={17} aria-hidden="true" /> Small board. Big rivalry.</h2></div><ol className="rules-list"><li><span>01</span><p><strong>Take turns.</strong> X and O share the same screen.</p></li><li><span>02</span><p><strong>Connect three.</strong> Across, down, or diagonally. Your call.</p></li><li><span>03</span><p><strong>Run it back.</strong> A full board without a winner is a draw.</p></li></ol><div className="keyboard-tip" id="keyboard-help"><Keyboard size={18} aria-hidden="true" /><p>Keyboard player?<br /><span>Tab to the board, arrow keys to explore, Enter or Space to play.</span></p></div></GlassPanel>
-            <div className="side-note"><span /> No sign-ups. No distractions. Just play.</div>
-          </aside>
-        </div>
+    <MotionConfig reducedMotion="user">
+      <main id="main-content" className="game-page">
+        <div className="ambient-orbit orbit-one" aria-hidden="true" />
+        <div className="ambient-orbit orbit-two" aria-hidden="true" />
+        <motion.div
+          className="game-content"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.45 }}
+        >
+          <div className="game-intro">
+            <span className="edition-label">
+              <span /> A TWO-PLAYER LITTLE ESCAPE
+            </span>
+            <h1>
+              Moon <em>&</em> Bloom
+              <span className="title-star" aria-hidden="true">
+                *
+              </span>
+            </h1>
+            <p>Opposite sides. Same little obsession.</p>
+            <span className="game-subtitle">TIC-TAC-TOE, WITH A LITTLE PERSONALITY</span>
+          </div>
+
+          <div className="game-table">
+            <Scoreboard
+              scores={state.scores}
+              ready={state.ready}
+              onReset={() => setPopup("scores")}
+            />
+            <PlayerCard
+              player="X"
+              active={state.ready && !finished && state.turn === "X"}
+              winner={result.winner === "X"}
+              score={state.scores.X}
+              ready={state.ready}
+            />
+            <GlassPanel className="play-panel" aria-label="Game board">
+              <div className="board-topline">
+                <span>
+                  <Users size={14} aria-hidden="true" /> YOU + A FRIEND
+                </span>
+                <button
+                  className="icon-button"
+                  aria-label="How to play"
+                  onClick={() => setPopup("help")}
+                >
+                  <CircleHelp size={19} aria-hidden="true" />
+                </button>
+              </div>
+              <div className="turn-status" role="status" aria-live="polite" aria-atomic="true">
+                <AnimatePresence mode="wait" initial={false}>
+                  <motion.div
+                    key={status}
+                    className="turn-status-inner"
+                    initial={{ opacity: 0, y: 5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -5 }}
+                    transition={{ duration: 0.13 }}
+                  >
+                    {finished ? (
+                      <Check size={20} aria-hidden="true" />
+                    ) : (
+                      <PlayerMark player={state.turn} />
+                    )}
+                    <h2>{status}</h2>
+                  </motion.div>
+                </AnimatePresence>
+                <p>
+                  {finished
+                    ? "A little rivalry deserves a rematch."
+                    : "Find your square. Make it yours."}
+                </p>
+              </div>
+              <Board
+                board={state.board}
+                turn={state.turn}
+                line={result.line}
+                locked={!state.ready || finished}
+                onPlay={play}
+              />
+              <div className="board-bottomline">
+                <span>
+                  {String(moves).padStart(2, "0")} <span>/ 09 moves</span>
+                </span>
+                <span>{finished ? "Round complete" : "Three in a row wins"}</span>
+              </div>
+              <button
+                className={`new-game ${finished ? "primary-button" : "secondary-button"}`}
+                disabled={!state.ready}
+                onClick={() => (moves > 0 && !finished ? setPopup("round") : startRound())}
+              >
+                {finished ? (
+                  <ArrowRight size={16} aria-hidden="true" />
+                ) : (
+                  <RotateCcw size={15} aria-hidden="true" />
+                )}
+                {finished ? "Play another round" : "New Game"}
+              </button>
+              <span id="keyboard-help" className="sr-only">
+                Use Tab or arrow keys to choose a square. Press Enter or Space to play.
+              </span>
+            </GlassPanel>
+            <PlayerCard
+              player="O"
+              active={state.ready && !finished && state.turn === "O"}
+              winner={result.winner === "O"}
+              score={state.scores.O}
+              ready={state.ready}
+            />
+          </div>
+
+          <div className={`save-status ${storageAvailable ? "" : "save-warning"}`} role="status">
+            {storageAvailable ? (
+              <ShieldCheck size={13} aria-hidden="true" />
+            ) : (
+              <AlertCircle size={15} aria-hidden="true" />
+            )}
+            <span>
+              {!state.ready
+                ? "Restoring your game..."
+                : storageAvailable
+                  ? "Your round is saved. Come back whenever."
+                  : "This browser cannot save changes. Refreshing may lose your latest board or scores; a browser warning will appear when supported."}
+            </span>
+          </div>
+          <footer className="game-footer">
+            <a className="portfolio-credit" href="https://johnreyluntayao.vercel.app">
+              A little game by <strong>Johnrey</strong>
+              <ArrowRight size={13} aria-hidden="true" />
+            </a>
+            <span>Made for the rematch.</span>
+          </footer>
+        </motion.div>
       </main>
-      <footer className="site-footer"><span>DESIGNED & BUILT BY <strong>JOHNREY</strong></span><span>Made for a little friendly competition.</span></footer>
-      {confirmation && <ConfirmDialog title={confirmation === "round" ? "Start a fresh round?" : "Reset the scoreboard?"} description={confirmation === "round" ? "This round is still in progress. Starting over clears the board without changing your scores." : "Both players' wins and all draws will return to zero. Your current board stays as it is."} confirmLabel={confirmation === "round" ? "New Game" : "Reset scores"} onClose={() => setConfirmation(null)} onConfirm={() => { dispatch({ type: confirmation === "round" ? "new-round" : "reset-scores" }); setConfirmation(null); }} />}
-    </div>
+
+      {finished && !resultDismissed && state.ready && !popup && (
+        <ResultDialog
+          winner={result.winner}
+          nextStarter={nextStarter}
+          celebrate={celebrate}
+          onNext={startRound}
+          onClose={() => {
+            setResultDismissed(true);
+            setCelebrate(false);
+          }}
+        />
+      )}
+      {popup === "help" && <HelpDialog onClose={() => setPopup(null)} />}
+      {(popup === "round" || popup === "scores") && (
+        <ConfirmDialog
+          title={popup === "round" ? "A fresh start?" : "Reset the rivalry?"}
+          description={
+            popup === "round"
+              ? "This round is still in play. Starting again clears the board, keeps your scores, and lets the other player go first."
+              : "Moon's wins, Bloom's wins, and all draws will return to zero. Your current board stays right here."
+          }
+          confirmLabel={popup === "round" ? "Start new game" : "Reset scores"}
+          onClose={() => setPopup(null)}
+          onConfirm={() => {
+            if (popup === "round") startRound();
+            else {
+              send({ type: "reset-scores" });
+              setPopup(null);
+            }
+          }}
+        />
+      )}
+    </MotionConfig>
   );
 }

@@ -67,11 +67,15 @@
     outline-offset: 4px;
   }
 
-  button, input, textarea, select {
+  button,
+  input,
+  textarea,
+  select {
     font: inherit;
   }
 
-  button:not(:disabled), [role="button"]:not([aria-disabled="true"]) {
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]) {
     cursor: pointer;
   }
 
@@ -90,11 +94,15 @@
 }
 
 @media (min-width: 768px) {
-  :root { --panel-radius: 2rem; }
+  :root {
+    --panel-radius: 2rem;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
