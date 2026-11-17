@@ -1,4 +1,5 @@
+import { TicTacToe } from "@/components/game/tic-tac-toe";
+
 export default function Home() {
-  // The theme foundation is ready. Game components will be added separately.
-  return null;
+  return <TicTacToe />;
 }
