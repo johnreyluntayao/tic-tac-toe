@@ -9,8 +9,9 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Tic-Tac-Toe | Johnrey",
-  description: "A two-player tic-tac-toe game with a portfolio-inspired glass theme.",
+  title: "Moon & Bloom | Tic-Tac-Toe by Johnrey",
+  description:
+    "A little friendly rivalry. Play Moon & Bloom, a two-player tic-tac-toe game with original characters, saved rounds, and a celebration for every win.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
