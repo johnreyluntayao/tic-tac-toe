@@ -1,5 +1,4 @@
-// Public UI entry point for pages. Components exported here use direct internal
-// imports so this module never becomes part of a circular dependency.
+
 export { Board } from "@/components/game/board";
 export { PlayerMark } from "@/components/game/player-mark";
 export { Scoreboard } from "@/components/game/scoreboard";

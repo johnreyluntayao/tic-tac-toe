@@ -10,18 +10,18 @@ import {
   ShieldCheck,
   Users,
   AlertCircle,
-} from "lucide-react";
+  GlassPanel,
+  ConfirmDialog,
+  Board,
+  PlayerMark,
+  PlayerCard,
+  Scoreboard,
+  ResultDialog,
+  HelpDialog,
+} from "@/lib/imports";
 import { useGame } from "@/hooks/use-game";
 import { PLAYERS } from "@/lib/players";
 import { getResult } from "@/lib/game";
-import { GlassPanel } from "@/components/ui/glass-panel";
-import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { Board } from "@/components/game/board";
-import { PlayerMark } from "@/components/game/player-mark";
-import { PlayerCard } from "@/components/game/player-card";
-import { Scoreboard } from "@/components/game/scoreboard";
-import { ResultDialog } from "@/components/game/result-dialog";
-import { HelpDialog } from "@/components/game/help-dialog";
 import "@/styles/game.css";
 
 export function TicTacToe() {

@@ -1,12 +1,9 @@
 "use client";
 
-"use client";
-
 import { motion } from "framer-motion";
-import { Trophy } from "lucide-react";
+import { Trophy, PlayerMark } from "@/lib/imports";
 import type { Player } from "@/lib/game";
 import { PLAYERS } from "@/lib/players";
-import { PlayerMark } from "@/components/game/player-mark";
 
 export function PlayerCard({
   player,

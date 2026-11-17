@@ -1,5 +1,4 @@
-import { Keyboard, MousePointer2, RefreshCw } from "lucide-react";
-import { Modal } from "@/components/ui/modal";
+import { Keyboard, MousePointer2, RefreshCw, Modal } from "@/lib/imports";
 
 export function HelpDialog({ onClose }: { onClose: () => void }) {
   return (

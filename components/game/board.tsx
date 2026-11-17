@@ -2,9 +2,9 @@
 
 import { useRef, type KeyboardEvent } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { PlayerMark } from "@/lib/imports";
 import type { Board as BoardValue, Player } from "@/lib/game";
 import { PLAYERS } from "@/lib/players";
-import { PlayerMark } from "@/components/game/player-mark";
 
 type Props = {
   board: BoardValue;
