@@ -1,3 +1,5 @@
+"use client";
+
 import { useRef, type KeyboardEvent } from "react";
 import type { Board as BoardValue, Player } from "@/lib/game";
 import { PlayerMark } from "./player-mark";

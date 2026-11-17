@@ -1,4 +1,4 @@
-import { TicTacToe } from "@/components/game/tic-tac-toe";
+import { TicTacToe } from "@/lib/imports";
 
 export default function Home() {
   return <TicTacToe />;
